@@ -13,6 +13,7 @@ out/
 .turbo/
 .svelte-kit/
 *.tsbuildinfo
+next-env.d.ts
 
 # Environment variables
 .env

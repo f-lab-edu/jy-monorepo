@@ -17,6 +17,10 @@ export const nextConfig = [
       ...pluginNext.configs['core-web-vitals'].rules,
     },
   },
+  {
+    // Next가 자동 생성하는 파일이라 직접 수정하지 않으므로 린트에서 제외한다.
+    ignores: ['next-env.d.ts'],
+  },
 ];
 
 export default nextConfig;
