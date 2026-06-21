@@ -57,9 +57,9 @@ jy-monorepo/
 
 - **언어**: 코드 주석·문서는 **한국어**로 작성한다. 식별자(변수·함수·타입)는 영어.
 - **네이밍**:
-  - 컴포넌트 파일: `PascalCase` (예: `Button.tsx`)
+  - 컴포넌트 폴더·파일: `kebab-case` (예: `character-card/index.tsx`). 컴포넌트 **함수명**만 `PascalCase` (예: `CharacterCard`).
   - 그 외 파일(훅·유틸·설정): `kebab-case` (예: `use-auth.ts`)
-- **컴포넌트 구조**: **폴더당 컴포넌트**. (예: `Button/index.tsx`, `Button/Button.styles.ts`, `Button/Button.test.tsx`)
+- **컴포넌트 구조**: **폴더당 컴포넌트**. (예: `character-card/index.tsx`, `character-card/character-card.styles.ts`, `character-card/character-card.test.tsx`)
 - **import 경로**: **절대경로 alias `@/`** 사용. 깊은 상대경로(`../../..`) 지양.
 - **Emotion**: **`styled` 컴포넌트를 기본**으로 하고, 일회성 미세조정에만 **`css` prop**을 혼용한다.
   - 재사용 컴포넌트의 스타일은 `*.styles.ts`로 분리.
