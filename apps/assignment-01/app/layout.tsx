@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import { QueryProvider } from './providers';
-import { EmotionRegistry } from './registry';
+import { EmotionRegistry } from '@jy/next-runtime/emotion-registry';
+import { QueryProvider } from '@jy/next-runtime/query-provider';
 
 export const metadata: Metadata = {
   title: 'assignment-01 — 목록 페이지',

@@ -1,0 +1,22 @@
+{
+  "name": "@jy/next-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./emotion-registry": "./src/emotion-registry.tsx",
+    "./query-provider": "./src/query-provider.tsx"
+  },
+  "devDependencies": {
+    "@jy/tsconfig": "workspace:*",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19",
+    "next": "^15",
+    "@emotion/react": "^11",
+    "@emotion/cache": "^11",
+    "@tanstack/react-query": "^5"
+  }
+}
