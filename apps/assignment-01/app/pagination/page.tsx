@@ -1,4 +1,5 @@
-import { CharacterListSection } from '@/components/character-list-section';
+import { CharacterList } from '@/components/character-list';
+import { ListBoundary } from '@/components/list-boundary';
 
 // 페이지네이션 목록 페이지(서버 컴포넌트).
 // searchParams의 page를 읽어 검증한 뒤 목록 섹션에 전달한다.
@@ -16,7 +17,9 @@ export default async function PaginationPage({
   return (
     <main>
       <h1>페이지네이션 목록</h1>
-      <CharacterListSection page={currentPage} />
+      <ListBoundary fallback={<p>불러오는 중…</p>}>
+        <CharacterList page={currentPage} />
+      </ListBoundary>
     </main>
   );
 }
