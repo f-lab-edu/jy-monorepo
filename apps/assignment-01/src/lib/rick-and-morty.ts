@@ -1,4 +1,4 @@
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 
 // Rick and Morty API 응답 타입 (목록 렌더에 필요한 필드만 정의한다).
 export interface Character {
@@ -39,5 +39,18 @@ export function charactersQuery(page: number) {
   return queryOptions({
     queryKey: ['characters', page],
     queryFn: () => fetchCharacters(page),
+  });
+}
+
+// 무한스크롤용 쿼리 옵션.
+// getNextPageParam은 다음에 불러올 페이지 번호를 반환하며, info.next가 null(마지막 페이지)이면
+// undefined를 반환해 더 이상 요청하지 않는다.
+export function charactersInfiniteQuery() {
+  return infiniteQueryOptions({
+    queryKey: ['characters', 'infinite'],
+    queryFn: ({ pageParam }) => fetchCharacters(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      lastPage.info.next ? lastPageParam + 1 : undefined,
   });
 }
