@@ -23,22 +23,36 @@ export interface CharacterPage {
 
 const API_BASE = 'https://rickandmortyapi.com/api';
 
-// 특정 페이지의 캐릭터 목록을 가져온다.
+// 빈 검색 결과를 표현하는 빈 페이지. 404를 에러 대신 "결과 없음"으로 변환할 때 쓴다.
+const EMPTY_PAGE: CharacterPage = {
+  info: { count: 0, pages: 0, next: null, prev: null },
+  results: [],
+};
+
+// 캐릭터 목록을 가져온다. name이 있으면 검색 필터로 사용한다.
 // 실패 시 throw하여 상위 ErrorBoundary가 처리하도록 한다(여기서 잡지 않는다).
-async function fetchCharacters(page: number): Promise<CharacterPage> {
-  const response = await fetch(`${API_BASE}/character?page=${page}`);
+async function fetchCharacters(page: number, name?: string): Promise<CharacterPage> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (name) params.set('name', name);
+
+  const response = await fetch(`${API_BASE}/character?${params.toString()}`);
+
+  // 검색 결과가 없으면 Rick and Morty는 404를 반환한다.
+  // 이는 에러가 아니라 "결과 없음"이므로 빈 목록으로 변환해 빈 상태 UI로 처리한다.
+  if (response.status === 404) {
+    return EMPTY_PAGE;
+  }
   if (!response.ok) {
     throw new Error(`캐릭터 목록을 불러오지 못했습니다. (HTTP ${response.status})`);
   }
   return response.json() as Promise<CharacterPage>;
 }
 
-// 페이지별 쿼리 옵션. queryKey에 page를 포함해 페이지마다 캐시를 분리한다.
-// queryOptions로 묶어 두면 목록과 페이지네이션이 같은 키를 공유해 캐시를 재사용한다.
-export function charactersQuery(page: number) {
+// 페이지별 쿼리 옵션. queryKey에 page·name을 포함해 조합마다 캐시를 분리한다.
+export function charactersQuery(page: number, name: string) {
   return queryOptions({
-    queryKey: ['characters', page],
-    queryFn: () => fetchCharacters(page),
+    queryKey: ['characters', page, name],
+    queryFn: () => fetchCharacters(page, name),
   });
 }
 
