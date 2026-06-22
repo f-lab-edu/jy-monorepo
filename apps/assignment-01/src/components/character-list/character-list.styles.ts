@@ -7,3 +7,9 @@ export const Grid = styled.ul`
   margin: 0;
   padding: 0;
 `;
+
+export const EmptyState = styled.p`
+  padding: 48px;
+  text-align: center;
+  color: #666;
+`;
