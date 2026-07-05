@@ -30,7 +30,12 @@
 ## 페이지 구성
 
 - `/pagination` — 페이지네이션 목록 (+ 검색 방법 A)
-- `/infinite` — 무한스크롤 목록 (+ 검색 방법 B)
+- `/infinite` — 무한스크롤 목록 (검색 없음)
+- `/search` — 페이지네이션 목록 (+ 검색 방법 B)
+
+> 방법 B는 원래 `/infinite`에 결합할 계획이었으나, 무한스크롤과 `enabled`(빈 검색어 차단)를 결합하면
+> 초기 화면이 비는 문제가 있어 **페이지네이션 UI와 결합한 별도 `/search` 페이지**로 분리했다.
+> 덕분에 방법 A vs B를 독립 페이지로 나란히 비교할 수 있다.
 
 ## 검색 방법론 (학습 포인트)
 
@@ -40,11 +45,14 @@ Search 류 페이지를 만드는 두 가지 방식을, 두 페이지에 하나�
 
 - 제출 시점에만 검색어가 확정되고, 그때만 쿼리가 재실행된다.
 - **주의**: 여기에 RHF `watch`를 쓰면 "제출 시에만 fetch"라는 의도와 "값 변화마다 반응"이라는 의도가 **상충**한다. 그래서 `watch` 사용은 잘못된 방법으로 본다.
+- 상태 출처는 **URL**(`router.push`). 제출 → URL 변경 → 쿼리 키(`name`) 변경 → 자동 refetch. **Suspense** 기반.
 
-### 방법 B — submit 없이 debounce된 값 + `enabled` 옵션  → `/infinite`
+### 방법 B — submit 없이 debounce된 값 + `enabled` 옵션  → `/search`
 
 - 입력값을 debounce하여 쿼리 키로 사용한다.
 - 검색어 유무를 `useQuery`의 `enabled` 옵션으로 제어한다 (빈 검색어일 때 불필요한 요청 차단).
+- 상태 출처는 **로컬 state**(`useState`). 실시간 입력이라 URL 히스토리를 오염시키지 않기 위함.
+- `useSuspenseQuery`는 `enabled`를 지원하지 않으므로 **non-suspense `useQuery`** 를 쓰고 로딩·에러를 반환값으로 직접 처리한다 (방법 A의 Suspense 방식과 대비).
 
 ## 코드 작성 원칙 (이 과제에서 특히)
 

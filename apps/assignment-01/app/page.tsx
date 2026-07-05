@@ -13,6 +13,9 @@ export default function HomePage() {
           <li>
             <Link href="/infinite">무한스크롤 목록</Link>
           </li>
+          <li>
+            <Link href="/search">실시간 검색 목록 (방법 B)</Link>
+          </li>
         </ul>
       </nav>
     </main>
