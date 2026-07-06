@@ -18,6 +18,19 @@
 | 스타일 SSR | **Emotion registry** (`'use client'` + cache provider) | App Router는 RSC와 Emotion이 충돌하므로 스타일 주입용 registry가 필수. |
 | 데이터 페칭 | **TanStack Query** | Suspense·무한스크롤·`enabled`를 1급으로 지원. 과제의 `useQuery`/`refetch`/`enabled` 맥락과 정합. |
 | 데이터 소스 | **Rick and Morty API** (`https://rickandmortyapi.com/api`) | 인증 불필요. 페이지네이션(`?page=`)·무한스크롤(`info.next`)·서버 검색(`?name=`)을 한 API로 모두 지원. |
+| 스타일 작성 | **`css` prop 우선** (이 앱 한정) | 리뷰 피드백: 일회성 스타일은 마크업 옆 `css` prop이 가독성에 유리. 루트의 "styled 기본"에 대한 **이 앱만의 예외**. |
+
+## 스타일 작성 방식 — `css` prop 우선 (루트 컨벤션 예외)
+
+> 루트 `CLAUDE.md`는 "styled 기본"이지만, **이 앱은 리뷰 피드백을 반영해 `css` prop을 우선**한다. 예외는 앱 로컬에만 적용한다(다른 과제 앱은 여전히 styled 기본).
+
+- **원칙**: 일회성 스타일은 별도 컴포넌트(`styled`)를 만들지 않고 마크업에 `css` prop으로 직접 붙인다. 스타일이 마크업 옆에 있어 한눈에 읽힌다.
+- **예외**: 한 파일에서 반복되는 스타일(예: 이전/다음 버튼)만 그 파일 상단의 `css` 상수로 뽑아 재사용한다.
+- **전제 설정**:
+  - `css` prop을 쓰는 클라이언트 파일 상단에 `/** @jsxImportSource @emotion/react */` pragma를 붙인다(전역 `jsxImportSource`는 RSC와 충돌하므로 파일별로 지정).
+  - `next.config.ts`의 `compiler.emotion: true`가 SWC 변환을 담당한다.
+  - 앱 로컬 `eslint.config.mjs`에서 `react/no-unknown-property`에 `css`를 예외 처리한다.
+- `*.styles.ts` 파일은 만들지 않는다.
 
 ## 데이터 소스 메모 — Rick and Morty API
 

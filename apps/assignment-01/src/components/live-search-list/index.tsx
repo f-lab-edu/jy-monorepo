@@ -1,5 +1,7 @@
+/** @jsxImportSource @emotion/react */
 'use client';
 
+import { css } from '@emotion/react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 
@@ -7,7 +9,26 @@ import { CharacterCard } from '@/components/character-card';
 import { useDebounce } from '@/hooks/use-debounce';
 import { charactersQuery } from '@/lib/rick-and-morty';
 
-import { EmptyState, Grid, Input, Nav, PageButton, PageText } from './live-search-list.styles';
+// 이전/다음/다시 시도에서 반복 쓰이는 버튼 스타일만 상수로 둔다.
+const pageButtonStyle = css`
+  padding: 8px 16px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+// 안내·로딩·결과 없음 등 상태 문구에 공통으로 쓰는 스타일.
+const messageStyle = css`
+  padding: 48px;
+  text-align: center;
+  color: #666;
+`;
 
 // 방법 B: submit 없이 입력값을 debounce하여 검색한다.
 // 검색어 유무는 useQuery의 enabled로 제어해, 빈 검색어일 땐 요청 자체를 막는다.
@@ -33,48 +54,89 @@ export function LiveSearchList() {
   let body: ReactNode;
   if (trimmed.length === 0) {
     // 검색어 입력 전: 요청하지 않으므로 안내만 한다.
-    body = <EmptyState>검색어를 입력하세요.</EmptyState>;
+    body = <p css={messageStyle}>검색어를 입력하세요.</p>;
   } else if (isError) {
     body = (
-      <EmptyState>
-        불러오지 못했습니다. <PageButton onClick={() => refetch()}>다시 시도</PageButton>
-      </EmptyState>
+      <p css={messageStyle}>
+        불러오지 못했습니다.{' '}
+        <button type="button" css={pageButtonStyle} onClick={() => refetch()}>
+          다시 시도
+        </button>
+      </p>
     );
   } else if (!data) {
     // enabled가 켜졌지만 아직 첫 응답이 없는 상태.
-    body = <EmptyState>불러오는 중…</EmptyState>;
+    body = <p css={messageStyle}>불러오는 중…</p>;
   } else if (data.results.length === 0) {
     // 404를 빈 목록으로 변환한 결과(검색 결과 없음).
-    body = <EmptyState>검색 결과가 없습니다.</EmptyState>;
+    body = <p css={messageStyle}>검색 결과가 없습니다.</p>;
   } else {
     body = (
       <>
-        <Grid>
+        <ul
+          css={css`
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            margin: 0;
+            padding: 0;
+          `}
+        >
           {data.results.map((character) => (
             <CharacterCard key={character.id} character={character} />
           ))}
-        </Grid>
-        <Nav>
-          <PageButton onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+        </ul>
+        <nav
+          css={css`
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 24px;
+          `}
+        >
+          <button
+            type="button"
+            css={pageButtonStyle}
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page <= 1}
+          >
             이전
-          </PageButton>
-          <PageText>
+          </button>
+          <span
+            css={css`
+              min-width: 60px;
+              text-align: center;
+            `}
+          >
             {page} / {data.info.pages}
-          </PageText>
-          <PageButton onClick={() => setPage((p) => p + 1)} disabled={page >= data.info.pages}>
+          </span>
+          <button
+            type="button"
+            css={pageButtonStyle}
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= data.info.pages}
+          >
             다음
-          </PageButton>
-        </Nav>
+          </button>
+        </nav>
       </>
     );
   }
 
   return (
     <>
-      <Input
+      <input
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder="캐릭터 이름 검색"
+        css={css`
+          width: 100%;
+          padding: 8px 12px;
+          margin-bottom: 24px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+        `}
       />
       {body}
     </>
