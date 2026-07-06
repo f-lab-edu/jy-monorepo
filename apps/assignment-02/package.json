@@ -17,7 +17,9 @@
     "@tanstack/react-query": "^5.64.0",
     "next": "^15.1.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-error-boundary": "^6.0.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@jy/eslint-config": "workspace:*",
