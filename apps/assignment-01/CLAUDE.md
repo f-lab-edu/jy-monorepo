@@ -18,6 +18,19 @@
 | 스타일 SSR | **Emotion registry** (`'use client'` + cache provider) | App Router는 RSC와 Emotion이 충돌하므로 스타일 주입용 registry가 필수. |
 | 데이터 페칭 | **TanStack Query** | Suspense·무한스크롤·`enabled`를 1급으로 지원. 과제의 `useQuery`/`refetch`/`enabled` 맥락과 정합. |
 | 데이터 소스 | **Rick and Morty API** (`https://rickandmortyapi.com/api`) | 인증 불필요. 페이지네이션(`?page=`)·무한스크롤(`info.next`)·서버 검색(`?name=`)을 한 API로 모두 지원. |
+| 스타일 작성 | **`css` prop 우선** (이 앱 한정) | 리뷰 피드백: 일회성 스타일은 마크업 옆 `css` prop이 가독성에 유리. 루트의 "styled 기본"에 대한 **이 앱만의 예외**. |
+
+## 스타일 작성 방식 — `css` prop 우선 (루트 컨벤션 예외)
+
+> 루트 `CLAUDE.md`는 "styled 기본"이지만, **이 앱은 리뷰 피드백을 반영해 `css` prop을 우선**한다. 예외는 앱 로컬에만 적용한다(다른 과제 앱은 여전히 styled 기본).
+
+- **원칙**: 일회성 스타일은 별도 컴포넌트(`styled`)를 만들지 않고 마크업에 `css` prop으로 직접 붙인다. 스타일이 마크업 옆에 있어 한눈에 읽힌다.
+- **예외**: 한 파일에서 반복되는 스타일(예: 이전/다음 버튼)만 그 파일 상단의 `css` 상수로 뽑아 재사용한다.
+- **전제 설정**:
+  - `css` prop을 쓰는 클라이언트 파일 상단에 `/** @jsxImportSource @emotion/react */` pragma를 붙인다(전역 `jsxImportSource`는 RSC와 충돌하므로 파일별로 지정).
+  - `next.config.ts`의 `compiler.emotion: true`가 SWC 변환을 담당한다.
+  - 앱 로컬 `eslint.config.mjs`에서 `react/no-unknown-property`에 `css`를 예외 처리한다.
+- `*.styles.ts` 파일은 만들지 않는다.
 
 ## 데이터 소스 메모 — Rick and Morty API
 
@@ -30,7 +43,12 @@
 ## 페이지 구성
 
 - `/pagination` — 페이지네이션 목록 (+ 검색 방법 A)
-- `/infinite` — 무한스크롤 목록 (+ 검색 방법 B)
+- `/infinite` — 무한스크롤 목록 (검색 없음)
+- `/search` — 페이지네이션 목록 (+ 검색 방법 B)
+
+> 방법 B는 원래 `/infinite`에 결합할 계획이었으나, 무한스크롤과 `enabled`(빈 검색어 차단)를 결합하면
+> 초기 화면이 비는 문제가 있어 **페이지네이션 UI와 결합한 별도 `/search` 페이지**로 분리했다.
+> 덕분에 방법 A vs B를 독립 페이지로 나란히 비교할 수 있다.
 
 ## 검색 방법론 (학습 포인트)
 
@@ -40,11 +58,14 @@ Search 류 페이지를 만드는 두 가지 방식을, 두 페이지에 하나�
 
 - 제출 시점에만 검색어가 확정되고, 그때만 쿼리가 재실행된다.
 - **주의**: 여기에 RHF `watch`를 쓰면 "제출 시에만 fetch"라는 의도와 "값 변화마다 반응"이라는 의도가 **상충**한다. 그래서 `watch` 사용은 잘못된 방법으로 본다.
+- 상태 출처는 **URL**(`router.push`). 제출 → URL 변경 → 쿼리 키(`name`) 변경 → 자동 refetch. **Suspense** 기반.
 
-### 방법 B — submit 없이 debounce된 값 + `enabled` 옵션  → `/infinite`
+### 방법 B — submit 없이 debounce된 값 + `enabled` 옵션  → `/search`
 
 - 입력값을 debounce하여 쿼리 키로 사용한다.
 - 검색어 유무를 `useQuery`의 `enabled` 옵션으로 제어한다 (빈 검색어일 때 불필요한 요청 차단).
+- 상태 출처는 **로컬 state**(`useState`). 실시간 입력이라 URL 히스토리를 오염시키지 않기 위함.
+- `useSuspenseQuery`는 `enabled`를 지원하지 않으므로 **non-suspense `useQuery`** 를 쓰고 로딩·에러를 반환값으로 직접 처리한다 (방법 A의 Suspense 방식과 대비).
 
 ## 코드 작성 원칙 (이 과제에서 특히)
 
