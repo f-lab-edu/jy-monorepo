@@ -15,6 +15,8 @@ type SubscriptionState = {
   selectPlan: (planId: string) => void;
   completeProfile: () => void;
   selectPaymentMethod: (paymentMethodId: string) => void;
+  /** 저장된 카드 ID가 서버 목록에 없을 때(예: 서버 재시작으로 db 초기화) 선택을 무효화한다. */
+  clearPaymentMethod: () => void;
   selectCoupon: (couponId: string | null) => void;
   /** 구독 완료 후 초기화. 완료 신호는 store 밖(완료 토큰)에 둔다 — CLAUDE.md 완료 토큰 규약. */
   reset: () => void;
@@ -34,6 +36,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       selectPlan: (planId) => set({ planId }),
       completeProfile: () => set({ profileCompleted: true }),
       selectPaymentMethod: (paymentMethodId) => set({ paymentMethodId }),
+      clearPaymentMethod: () => set({ paymentMethodId: null }),
       selectCoupon: (couponId) => set({ couponId }),
       reset: () => set(initialSelection),
     }),
