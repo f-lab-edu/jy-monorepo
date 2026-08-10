@@ -1,14 +1,11 @@
 /** @jsxImportSource @emotion/react */
 'use client';
 
-import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useSuspenseQueries } from '@tanstack/react-query';
 import { type ReactNode } from 'react';
 
 import { MutationErrorAlert } from '@/components/mutation-error-alert';
 import { useValidatedCoupon, useValidatedPaymentMethod } from '@/hooks/use-validated-selection';
-import { ApiError, fetchJson } from '@/lib/api-client';
-import { issueCompleteToken } from '@/lib/complete-token';
 import { calculateDiscountedPrice } from '@/lib/discount';
 import {
   couponsQueryOptions,
@@ -16,17 +13,15 @@ import {
   plansQueryOptions,
   userQueryOptions,
 } from '@/lib/queries';
-import type { CheckoutBody, Subscription } from '@/lib/types';
 import { useSubscriptionStore } from '@/store/subscription-store';
+
+import { useCheckout } from './use-checkout';
 
 const won = (value: number) => `${value.toLocaleString('ko-KR')}원`;
 
 // Step4 본문: 지금까지의 선택을 서버 데이터로 재조회해 요약하고, 구독을 확정한다.
 // store에는 참조 ID만 있으므로(상태 소유권 원칙) 이름·가격 같은 표시 정보는 전부 여기서 다시 읽는다.
 export function CheckoutStep() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
   // 네 쿼리를 한 배치로 묶어 병렬 실행한다.
   // useSuspenseQuery를 여러 번 나열하면 suspend가 직렬화되어 요청 워터폴이 생긴다(CLAUDE.md 규약).
   const [{ data: plans }, { data: user }, { data: paymentMethods }, { data: coupons }] =
@@ -46,26 +41,8 @@ export function CheckoutStep() {
   const paymentMethod = useValidatedPaymentMethod(paymentMethods);
   const coupon = useValidatedCoupon(coupons);
 
-  const checkout = useMutation({
-    mutationFn: (body: CheckoutBody) =>
-      fetchJson<Subscription>('/api/subscriptions/checkout', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      }),
-    onSuccess: () => {
-      // 완료 토큰 규약: reset()은 여기서 부르지 않는다 — 이 화면의 StepGuard가 빈 store를
-      // 보고 /plans로 가로채 /complete 이동이 무산된다. 토큰 소비와 reset은 /complete 몫.
-      issueCompleteToken();
-      router.replace('/complete');
-    },
-    onError: (error) => {
-      // 400 = 서버 ID 재검증 실패(선택 만료). 목록을 다시 받아 위 방어 로직이 정리하게 한다.
-      if (error instanceof ApiError && error.status === 400) {
-        void queryClient.invalidateQueries();
-      }
-    },
-  });
+  // 구독 확정 오케스트레이션(핵심 관심사)은 화면 전용 훅으로 분리했다 — 여기는 렌더에 집중한다.
+  const { checkout, isSelectionExpired } = useCheckout();
 
   const plan = plans.find(({ id }) => id === planId);
 
@@ -74,10 +51,6 @@ export function CheckoutStep() {
   if (!plan || !paymentMethod) return null;
 
   const finalPrice = calculateDiscountedPrice(plan.pricePerMonth, coupon);
-
-  // 400 = 서버 ID 재검증 실패. "선택 만료"라는 해석은 이 화면의 도메인 지식이라
-  // 표시 컴포넌트에 넣지 않고 여기 남긴다(위 onError의 invalidate 판단과 같은 조건).
-  const isSelectionExpired = checkout.error instanceof ApiError && checkout.error.status === 400;
 
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 32 }}>
