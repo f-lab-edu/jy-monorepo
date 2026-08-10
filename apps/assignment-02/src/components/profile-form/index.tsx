@@ -5,6 +5,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-q
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
+import { MutationErrorAlert } from '@/components/mutation-error-alert';
 import { fetchJson } from '@/lib/api-client';
 import { STEP_PATHS } from '@/lib/funnel';
 import { userQueryOptions } from '@/lib/queries';
@@ -101,13 +102,7 @@ export function ProfileForm() {
         />
       </Field>
 
-      {mutation.isError && (
-        <p role="alert" css={{ margin: 0, fontSize: 14, color: '#dc2626' }}>
-          {mutation.error instanceof Error
-            ? mutation.error.message
-            : '프로필 저장에 실패했습니다.'}
-        </p>
-      )}
+      <MutationErrorAlert error={mutation.error} fallback="프로필 저장에 실패했습니다." />
 
       <button
         type="submit"

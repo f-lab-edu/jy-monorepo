@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { MutationErrorAlert } from '@/components/mutation-error-alert';
 import { fetchJson } from '@/lib/api-client';
 import { CARD_NUMBER_LENGTH, isValidCardNumber, normalizeCardNumber } from '@/lib/card';
 import { paymentMethodsQueryOptions } from '@/lib/queries';
@@ -108,11 +109,7 @@ export function CardRegisterModal({
           )}
         </label>
 
-        {mutation.isError && (
-          <p role="alert" css={{ margin: 0, fontSize: 13, color: '#dc2626' }}>
-            {mutation.error instanceof Error ? mutation.error.message : '카드 등록에 실패했습니다.'}
-          </p>
-        )}
+        <MutationErrorAlert error={mutation.error} fallback="카드 등록에 실패했습니다." />
 
         <div css={{ display: 'flex', gap: 8 }}>
           <button

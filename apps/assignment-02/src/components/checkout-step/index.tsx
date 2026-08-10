@@ -5,6 +5,7 @@ import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react
 import { useRouter } from 'next/navigation';
 import { type ReactNode } from 'react';
 
+import { MutationErrorAlert } from '@/components/mutation-error-alert';
 import { useValidatedCoupon, useValidatedPaymentMethod } from '@/hooks/use-validated-selection';
 import { ApiError, fetchJson } from '@/lib/api-client';
 import { issueCompleteToken } from '@/lib/complete-token';
@@ -74,13 +75,9 @@ export function CheckoutStep() {
 
   const finalPrice = calculateDiscountedPrice(plan.pricePerMonth, coupon);
 
-  const errorMessage = !checkout.isError
-    ? null
-    : checkout.error instanceof ApiError && checkout.error.status === 400
-      ? `선택하신 정보가 만료되었습니다 — ${checkout.error.message}`
-      : checkout.error instanceof Error
-        ? checkout.error.message
-        : '구독 처리에 실패했습니다.';
+  // 400 = 서버 ID 재검증 실패. "선택 만료"라는 해석은 이 화면의 도메인 지식이라
+  // 표시 컴포넌트에 넣지 않고 여기 남긴다(위 onError의 invalidate 판단과 같은 조건).
+  const isSelectionExpired = checkout.error instanceof ApiError && checkout.error.status === 400;
 
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 32 }}>
@@ -123,22 +120,12 @@ export function CheckoutStep() {
         </div>
       </Section>
 
-      {errorMessage && (
-        <p
-          role="alert"
-          css={{
-            margin: 0,
-            padding: '12px 14px',
-            borderRadius: 8,
-            backgroundColor: '#fef2f2',
-            color: '#dc2626',
-            fontSize: 14,
-            lineHeight: 1.6,
-          }}
-        >
-          {errorMessage}
-        </p>
-      )}
+      <MutationErrorAlert
+        error={checkout.error}
+        fallback="구독 처리에 실패했습니다."
+        title={isSelectionExpired ? '선택하신 정보가 만료되었습니다' : undefined}
+        variant="banner"
+      />
 
       <button
         type="button"
