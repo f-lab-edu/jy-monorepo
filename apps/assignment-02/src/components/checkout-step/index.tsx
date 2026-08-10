@@ -3,8 +3,9 @@
 
 import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
+import { useValidatedCoupon, useValidatedPaymentMethod } from '@/hooks/use-validated-selection';
 import { ApiError, fetchJson } from '@/lib/api-client';
 import { issueCompleteToken } from '@/lib/complete-token';
 import { calculateDiscountedPrice } from '@/lib/discount';
@@ -38,21 +39,11 @@ export function CheckoutStep() {
     });
 
   const planId = useSubscriptionStore((state) => state.planId);
-  const paymentMethodId = useSubscriptionStore((state) => state.paymentMethodId);
-  const couponId = useSubscriptionStore((state) => state.couponId);
-  const clearPaymentMethod = useSubscriptionStore((state) => state.clearPaymentMethod);
-  const selectCoupon = useSubscriptionStore((state) => state.selectCoupon);
 
-  // 영속 ID 무효화 방어: sessionStorage에 남은 ID가 서버 목록에 없으면 선택을 클리어한다.
-  // 카드가 클리어되면 StepGuard가 /payment로 되돌리고, 쿠폰은 선택 사항이라 비우고 계속 진행한다.
-  const isStalePaymentMethod =
-    paymentMethodId !== null && !paymentMethods.some(({ id }) => id === paymentMethodId);
-  const isStaleCoupon = couponId !== null && !coupons.some(({ id }) => id === couponId);
-
-  useEffect(() => {
-    if (isStalePaymentMethod) clearPaymentMethod();
-    if (isStaleCoupon) selectCoupon(null);
-  }, [isStalePaymentMethod, isStaleCoupon, clearPaymentMethod, selectCoupon]);
+  // 영속 ID 무효화 방어는 훅이 수행한다 — 무효 ID는 클리어되고 null이 돌아온다.
+  // 카드가 클리어되면 StepGuard가 /payment로 되돌리고, 쿠폰은 선택 사항이라 미적용으로 계속 진행한다.
+  const paymentMethod = useValidatedPaymentMethod(paymentMethods);
+  const coupon = useValidatedCoupon(coupons);
 
   const checkout = useMutation({
     mutationFn: (body: CheckoutBody) =>
@@ -76,11 +67,9 @@ export function CheckoutStep() {
   });
 
   const plan = plans.find(({ id }) => id === planId);
-  const paymentMethod = paymentMethods.find(({ id }) => id === paymentMethodId);
-  const coupon = coupons.find(({ id }) => id === couponId) ?? null;
 
   // 시드 플랜·쿠폰 id는 고정 상수라 실제로 만료될 수 있는 건 카드뿐이다(등록 카드는 재시작 시 소실).
-  // 카드가 만료된 프레임은 위 이펙트가 클리어 → StepGuard redirect로 곧 사라지므로 그리지 않는다.
+  // 카드가 만료된 프레임은 훅이 클리어 → StepGuard redirect로 곧 사라지므로 그리지 않는다.
   if (!plan || !paymentMethod) return null;
 
   const finalPrice = calculateDiscountedPrice(plan.pricePerMonth, coupon);
