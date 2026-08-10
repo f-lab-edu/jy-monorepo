@@ -1,11 +1,11 @@
 /** @jsxImportSource @emotion/react */
 'use client';
 
-import { useEffect } from 'react';
-import { FormProvider, useForm, type FieldPath } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 
 import { getStepConfig, TOTAL_STEPS } from '@/components/record-form/step-config';
 import { StepNavigation } from '@/components/step-navigation';
+import { useErroredFieldsRevalidation } from '@/hooks/use-errored-fields-revalidation';
 import { useFunnelStep } from '@/hooks/use-funnel-step';
 import { DEFAULT_FORM_VALUES, type ReadingRecordFormValues } from '@/lib/reading-record';
 
@@ -20,21 +20,10 @@ export function RecordForm() {
     reValidateMode: 'onChange',
     defaultValues: DEFAULT_FORM_VALUES,
   });
-  const { trigger, watch } = methods;
+  const { trigger } = methods;
 
-  // reValidateMode('onChange')는 handleSubmit 이후(isSubmitted)에만 동작하는데,
-  // 스텝별 검증은 handleSubmit이 아닌 trigger를 쓰므로 자동 재검증이 일어나지 않는다.
-  // 에러가 있는 필드만 값 변경 시 직접 재검증해 "다음 클릭 후 즉시 재평가" 정책을 구현한다.
-  // (에러 없는 필드는 건드리지 않아 "입력 중엔 조용히"도 유지된다)
-  useEffect(() => {
-    const subscription = watch(() => {
-      const errored = Object.keys(
-        methods.formState.errors,
-      ) as FieldPath<ReadingRecordFormValues>[];
-      if (errored.length > 0) void trigger(errored);
-    });
-    return () => subscription.unsubscribe();
-  }, [methods, trigger, watch]);
+  // "다음" 클릭 후 즉시 재평가 정책 — 에러난 필드를 고치는 순간 에러를 해제한다.
+  useErroredFieldsRevalidation(methods);
 
   const { title, description, fields, Content } = getStepConfig(step);
 
