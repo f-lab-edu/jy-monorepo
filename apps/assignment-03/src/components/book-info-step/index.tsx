@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 
 import { FormField } from '@/components/form-field';
 import { fieldInputStyle } from '@/components/form-field/form-field.styles';
+import { RadioGroup } from '@/components/radio-group';
 import {
   READING_STATUSES,
   READING_STATUS_LABELS,
@@ -18,6 +19,12 @@ import {
   validateStartedAt,
   validateTotalPages,
 } from '@/lib/reading-record-rules';
+
+// 독서 상태 라디오 옵션 (도메인 정의 순서 유지).
+const STATUS_OPTIONS = READING_STATUSES.map((value) => ({
+  value,
+  label: READING_STATUS_LABELS[value],
+}));
 
 // Step1 — 도서 기본 정보 · 독서 상태 · 독서 기간.
 // 상태에 따라 금지된 기간 인풋은 disabled로 막고(UX), 검증 규칙은 그대로 둔다
@@ -95,40 +102,13 @@ export function BookInfoStep() {
       </div>
 
       <FormField label="독서 상태" error={errors.status?.message}>
-        <div css={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {READING_STATUSES.map((value) => (
-            <label
-              key={value}
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '9px 14px',
-                borderRadius: 8,
-                border: '1px solid #d1d5db',
-                fontSize: 14,
-                cursor: 'pointer',
-                '&:has(input:checked)': {
-                  borderColor: '#2563eb',
-                  backgroundColor: '#eff6ff',
-                  fontWeight: 600,
-                },
-              }}
-            >
-              <input
-                type="radio"
-                value={value}
-                css={{ accentColor: '#2563eb', margin: 0 }}
-                {...register('status', {
-                  required: '독서 상태를 선택해 주세요.',
-                  onChange: (event) =>
-                    handleStatusChange(event.target.value as ReadingStatus),
-                })}
-              />
-              {READING_STATUS_LABELS[value]}
-            </label>
-          ))}
-        </div>
+        <RadioGroup
+          options={STATUS_OPTIONS}
+          {...register('status', {
+            required: '독서 상태를 선택해 주세요.',
+            onChange: (event) => handleStatusChange(event.target.value as ReadingStatus),
+          })}
+        />
       </FormField>
 
       <div css={{ display: 'flex', gap: 12 }}>
