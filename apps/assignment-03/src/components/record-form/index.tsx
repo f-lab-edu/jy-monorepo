@@ -1,10 +1,11 @@
 /** @jsxImportSource @emotion/react */
 'use client';
 
-import { FormProvider, useForm } from 'react-hook-form';
+import { useEffect } from 'react';
+import { FormProvider, useForm, type FieldPath } from 'react-hook-form';
 
+import { BookInfoStep } from '@/components/book-info-step';
 import { StepNavigation } from '@/components/step-navigation';
-import { StepPlaceholder } from '@/components/step-placeholder';
 import { useFunnelStep } from '@/hooks/use-funnel-step';
 import { getStepMeta, STEP_FIELDS, TOTAL_STEPS } from '@/lib/funnel-steps';
 import { DEFAULT_FORM_VALUES, type ReadingRecordFormValues } from '@/lib/reading-record';
@@ -19,23 +20,48 @@ export function RecordForm() {
     reValidateMode: 'onChange',
     defaultValues: DEFAULT_FORM_VALUES,
   });
+  const { trigger, watch } = methods;
+
+  // reValidateMode('onChange')는 handleSubmit 이후(isSubmitted)에만 동작하는데,
+  // 스텝별 검증은 handleSubmit이 아닌 trigger를 쓰므로 자동 재검증이 일어나지 않는다.
+  // 에러가 있는 필드만 값 변경 시 직접 재검증해 "다음 클릭 후 즉시 재평가" 정책을 구현한다.
+  // (에러 없는 필드는 건드리지 않아 "입력 중엔 조용히"도 유지된다)
+  useEffect(() => {
+    const subscription = watch(() => {
+      const errored = Object.keys(
+        methods.formState.errors,
+      ) as FieldPath<ReadingRecordFormValues>[];
+      if (errored.length > 0) void trigger(errored);
+    });
+    return () => subscription.unsubscribe();
+  }, [methods, trigger, watch]);
 
   const { title, description } = getStepMeta(step);
 
   // "다음": 현재 스텝 필드만 검증하고 통과 시 이동. 실패 시 첫 실패 필드로 focus.
   const handleNext = async () => {
     const fields = STEP_FIELDS[step] ?? [];
-    const valid = fields.length === 0 || (await methods.trigger(fields, { shouldFocus: true }));
+    const valid = fields.length === 0 || (await trigger(fields, { shouldFocus: true }));
     if (valid) goNext();
   };
 
   return (
     <FormProvider {...methods}>
       <section css={{ maxWidth: 640, margin: '0 auto', padding: '48px 24px' }}>
-        <p css={{ fontSize: 14, color: '#888', margin: 0 }}>
+        <p css={{ fontSize: 14, color: '#888', margin: '0 0 24px' }}>
           {step} / {TOTAL_STEPS}
         </p>
-        <StepPlaceholder title={title} description={description} />
+        <h2 css={{ fontSize: 22, margin: '0 0 4px' }}>{title}</h2>
+        <p css={{ fontSize: 15, lineHeight: 1.6, color: '#555', margin: '0 0 24px' }}>
+          {description}
+        </p>
+        {step === 1 ? (
+          <BookInfoStep />
+        ) : (
+          <p css={{ padding: '16px 0', color: '#9ca3af', margin: 0 }}>
+            이 단계의 입력 필드는 이후 PR에서 구현됩니다.
+          </p>
+        )}
         <StepNavigation step={step} totalSteps={TOTAL_STEPS} onPrev={goPrev} onNext={handleNext} />
       </section>
     </FormProvider>
