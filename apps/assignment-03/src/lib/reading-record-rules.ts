@@ -49,3 +49,29 @@ export function validateTotalPages(value: number | null): true | string {
   }
   return true;
 }
+
+/**
+ * 별점 × 독후감 규칙 (과제 명세): 별점이 1점 또는 5점이면 독후감 100자 이상 필수.
+ * 명세가 "1점 또는 5점"을 명시하므로 0.5·1.5·4.5점 등 근접 값은 해당하지 않는 것으로 해석한다.
+ */
+export const REVIEW_MIN_LENGTH = 100;
+
+export function requiresReview(rating: number): boolean {
+  return rating === 1 || rating === 5;
+}
+
+export function validateRating(value: number): true | string {
+  if (Number.isNaN(value)) return '별점을 입력해 주세요.';
+  if (value < 0 || value > 5) return '별점은 0점과 5점 사이여야 합니다.';
+  if (!Number.isInteger(value * 2)) return '별점은 0.5점 단위로 입력해 주세요.';
+  return true;
+}
+
+export function validateReview(value: string, form: ReadingRecordFormValues): true | string {
+  if (!requiresReview(form.rating)) return true;
+  const length = value.trim().length;
+  if (length < REVIEW_MIN_LENGTH) {
+    return `별점이 ${form.rating}점인 경우 의견을 뒷받침할 독후감을 ${REVIEW_MIN_LENGTH}자 이상 작성해 주세요. (현재 ${length}자)`;
+  }
+  return true;
+}
