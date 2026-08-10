@@ -9,6 +9,16 @@ export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {
   'on-hold': '보류 중',
 };
 
+// 추천 여부. 라디오 인풋의 값은 항상 문자열이므로 boolean 대신 문자열 유니언으로 관리한다
+// (RHF의 valueAs*/setValueAs 변환은 텍스트 계열 인풋 전용이라 라디오에는 적용되지 않음).
+export const RECOMMEND_CHOICES = ['yes', 'no'] as const;
+export type RecommendChoice = (typeof RECOMMEND_CHOICES)[number];
+
+export const RECOMMEND_LABELS: Record<RecommendChoice, string> = {
+  yes: '추천해요',
+  no: '추천하지 않아요',
+};
+
 // 인용구 한 건. 페이지 번호는 인용구 개수에 따라 required가 달라지는 조건부 필드라
 // 인풋 원형(문자열)으로 두고 검증·제출 시 숫자로 다룬다.
 export interface QuoteField {
@@ -27,7 +37,7 @@ export interface ReadingRecordFormValues {
   startedAt: string;
   finishedAt: string;
   // Step2 — 추천 여부 · 별점(0~5, 0.5 스케일)
-  recommend: boolean | null;
+  recommend: RecommendChoice | null;
   rating: number;
   // Step3 — 독후감
   review: string;

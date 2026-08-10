@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { FormProvider, useForm, type FieldPath } from 'react-hook-form';
 
 import { BookInfoStep } from '@/components/book-info-step';
+import { RatingStep } from '@/components/rating-step';
+import { ReviewStep } from '@/components/review-step';
 import { StepNavigation } from '@/components/step-navigation';
 import { useFunnelStep } from '@/hooks/use-funnel-step';
 import { getStepMeta, STEP_FIELDS, TOTAL_STEPS } from '@/lib/funnel-steps';
@@ -55,9 +57,10 @@ export function RecordForm() {
         <p css={{ fontSize: 15, lineHeight: 1.6, color: '#555', margin: '0 0 24px' }}>
           {description}
         </p>
-        {step === 1 ? (
-          <BookInfoStep />
-        ) : (
+        {step === 1 && <BookInfoStep />}
+        {step === 2 && <RatingStep />}
+        {step === 3 && <ReviewStep />}
+        {step >= 4 && (
           <p css={{ padding: '16px 0', color: '#9ca3af', margin: 0 }}>
             이 단계의 입력 필드는 이후 PR에서 구현됩니다.
           </p>
