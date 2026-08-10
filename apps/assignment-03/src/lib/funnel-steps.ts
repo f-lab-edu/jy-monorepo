@@ -14,8 +14,9 @@ export const FUNNEL_STEPS = [
 export const TOTAL_STEPS = FUNNEL_STEPS.length;
 
 // "다음" 클릭 시 검증(trigger)할 스텝별 필드 목록. 각 스텝 구현 PR에서 채운다.
+// 배열 순서 = 화면 순서 — 검증 실패 시 "순서상 첫 실패 필드"로 focus하는 기준이 된다.
 export const STEP_FIELDS: Record<number, FieldPath<ReadingRecordFormValues>[]> = {
-  1: [],
+  1: ['title', 'author', 'publishedAt', 'totalPages', 'status', 'startedAt', 'finishedAt'],
   2: [],
   3: [],
   4: [],
