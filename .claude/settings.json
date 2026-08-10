@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/jy1007/Documents/02_study/00_F-lab/jy-monorepo log --oneline -20)",
+      "Bash(pnpm --filter assignment-02 typecheck)",
+      "Bash(pnpm --filter assignment-02 lint)"
+    ]
+  }
+}

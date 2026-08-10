@@ -3,11 +3,12 @@
 
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { CardRegisterModal } from '@/components/card-register-modal';
 import { CouponSelect } from '@/components/coupon-select';
 import { PaymentMethodCard } from '@/components/payment-method-card';
+import { useValidatedCoupon, useValidatedPaymentMethod } from '@/hooks/use-validated-selection';
 import { calculateDiscountedPrice } from '@/lib/discount';
 import { STEP_PATHS } from '@/lib/funnel';
 import { couponsQueryOptions, paymentMethodsQueryOptions, plansQueryOptions } from '@/lib/queries';
@@ -27,23 +28,15 @@ export function PaymentStep() {
   });
 
   const planId = useSubscriptionStore((state) => state.planId);
-  const paymentMethodId = useSubscriptionStore((state) => state.paymentMethodId);
-  const couponId = useSubscriptionStore((state) => state.couponId);
   const selectPaymentMethod = useSubscriptionStore((state) => state.selectPaymentMethod);
-  const clearPaymentMethod = useSubscriptionStore((state) => state.clearPaymentMethod);
   const selectCoupon = useSubscriptionStore((state) => state.selectCoupon);
 
-  // 영속 ID 무효화 방어: sessionStorage에 남은 카드 ID가 서버 목록에 없으면
-  // (예: 서버 재시작으로 인메모리 db가 seed로 초기화) 선택을 버리고 다시 고르게 한다.
-  const isStaleSelection =
-    paymentMethodId !== null && !paymentMethods.some(({ id }) => id === paymentMethodId);
-
-  useEffect(() => {
-    if (isStaleSelection) clearPaymentMethod();
-  }, [isStaleSelection, clearPaymentMethod]);
+  // 영속 ID 무효화 방어는 훅이 수행한다 — 서버 목록에 없는 카드·쿠폰 ID는
+  // 클리어되고 null이 돌아와 다시 고르게 된다(use-validated-selection).
+  const selectedPaymentMethod = useValidatedPaymentMethod(paymentMethods);
+  const selectedCoupon = useValidatedCoupon(coupons);
 
   const selectedPlan = plans.find(({ id }) => id === planId);
-  const selectedCoupon = coupons.find(({ id }) => id === couponId) ?? null;
   const originalPrice = selectedPlan?.pricePerMonth ?? 0;
   // 서버(checkout)와 같은 순수 함수를 써서 표시 금액과 청구 금액이 어긋나지 않게 한다.
   const finalPrice = calculateDiscountedPrice(originalPrice, selectedCoupon);
@@ -66,7 +59,7 @@ export function PaymentStep() {
               <PaymentMethodCard
                 key={paymentMethod.id}
                 paymentMethod={paymentMethod}
-                selected={paymentMethod.id === paymentMethodId}
+                selected={paymentMethod.id === selectedPaymentMethod?.id}
                 onSelect={selectPaymentMethod}
               />
             ))}
@@ -79,7 +72,7 @@ export function PaymentStep() {
 
       <section css={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <h2 css={sectionTitle}>쿠폰</h2>
-        <CouponSelect coupons={coupons} couponId={couponId} onSelect={selectCoupon} />
+        <CouponSelect coupons={coupons} couponId={selectedCoupon?.id ?? null} onSelect={selectCoupon} />
       </section>
 
       <section css={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -105,7 +98,8 @@ export function PaymentStep() {
 
       <button
         type="button"
-        disabled={paymentMethodId === null || isStaleSelection}
+        // 미선택과 무효(클리어 직전) 카드 모두 null로 수렴하므로 이 조건 하나로 막힌다.
+        disabled={selectedPaymentMethod === null}
         onClick={() => router.push(STEP_PATHS.checkout)}
         css={{
           padding: '14px 0',
