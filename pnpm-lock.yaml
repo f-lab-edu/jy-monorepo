@@ -131,6 +131,58 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/assignment-03:
+    dependencies:
+      '@emotion/cache':
+        specifier: ^11.14.0
+        version: 11.14.0
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@emotion/styled':
+        specifier: ^11.14.0
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+      '@jy/next-runtime':
+        specifier: workspace:*
+        version: link:../../packages/next-runtime
+      '@tanstack/react-query':
+        specifier: ^5.64.0
+        version: 5.101.0(react@19.2.7)
+      next:
+        specifier: ^15.1.4
+        version: 15.5.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.7(react@19.2.7)
+      react-hook-form:
+        specifier: ^7.54.0
+        version: 7.80.0(react@19.2.7)
+    devDependencies:
+      '@jy/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@jy/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.19.21
+      '@types/react':
+        specifier: ^19.0.7
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.0.3
+        version: 19.2.3(@types/react@19.2.17)
+      eslint:
+        specifier: ^9.18.0
+        version: 9.39.4
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/eslint-config:
     dependencies:
       '@eslint/js':
