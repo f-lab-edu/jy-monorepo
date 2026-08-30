@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import type { FieldPath } from 'react-hook-form';
 
 import { BookInfoStep } from '@/components/book-info-step';
+import { QuotesStep } from '@/components/quotes-step';
 import { RatingStep } from '@/components/rating-step';
 import { ReviewStep } from '@/components/review-step';
 import type { ReadingRecordFormValues } from '@/lib/reading-record';
@@ -42,9 +43,9 @@ export const FUNNEL_STEPS = [
   },
   {
     title: '인용구',
-    description: '기억하고 싶은 문장을 기록합니다.',
-    fields: [],
-    Content: null,
+    description: '기억하고 싶은 문장을 기록합니다. 남길 문장이 없다면 건너뛸 수 있습니다.',
+    fields: ['quotes'],
+    Content: QuotesStep,
   },
   {
     title: '공개 설정',

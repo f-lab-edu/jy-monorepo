@@ -75,3 +75,44 @@ export function validateReview(value: string, form: ReadingRecordFormValues): tr
   }
   return true;
 }
+
+/**
+ * 인용구 규칙 (과제 명세): 인용구가 2개 이상이면 모든 페이지 번호가 필수,
+ * 1개 이하면 선택. 페이지 번호는 숫자만 받고 도서 전체 페이지 수보다 작아야 한다.
+ *
+ * 인용구 자체는 0개도 허용한다 — 명세의 "1개 이하면 optional"이 0개 상태를 전제한다.
+ */
+export const QUOTE_PAGE_REQUIRED_THRESHOLD = 2;
+
+export function requiresQuotePage(quoteCount: number): boolean {
+  return quoteCount >= QUOTE_PAGE_REQUIRED_THRESHOLD;
+}
+
+// 행을 추가해 놓고 비워두면 의미 없는 인용구가 제출되므로, 있는 행의 본문은 필수로 본다.
+export function validateQuoteText(value: string): true | string {
+  return value.trim() !== '' || '인용구 내용을 입력해 주세요. 남기지 않을 항목은 삭제해 주세요.';
+}
+
+/**
+ * 페이지 번호는 인풋 원형(문자열)으로 들어온다.
+ * 조건부 required라 빈 값 통과 여부가 인용구 개수에 따라 달라지므로 setValueAs로 숫자화하지 않고
+ * 문자열 그대로 검증한다 — 빈 문자열과 0을 구분해야 하기 때문.
+ */
+export function validateQuotePage(value: string, form: ReadingRecordFormValues): true | string {
+  const trimmed = value.trim();
+  if (trimmed === '') {
+    return (
+      !requiresQuotePage(form.quotes.length) ||
+      `인용구가 ${QUOTE_PAGE_REQUIRED_THRESHOLD}개 이상이면 페이지 번호를 모두 입력해 주세요.`
+    );
+  }
+  if (!/^\d+$/.test(trimmed)) return '페이지 번호는 숫자만 입력해 주세요.';
+  const page = Number(trimmed);
+  if (page < 1) return '페이지 번호는 1 이상이어야 합니다.';
+  // totalPages는 Step1의 필수값이지만, 미입력 상태로 넘어온 경우 상한 검증은 보류한다
+  // (전체 페이지 수 자체의 에러가 Step1에서 먼저 잡힌다).
+  if (form.totalPages !== null && page >= form.totalPages) {
+    return `페이지 번호는 전체 페이지 수(${form.totalPages}쪽)보다 작아야 합니다.`;
+  }
+  return true;
+}
