@@ -48,5 +48,6 @@ export function useFunnelStep(totalSteps: number) {
     if (step > 1) goTo(step - 1);
   }, [goTo, step]);
 
-  return { step, goNext, goPrev };
+  // goTo는 뒤 방향 점프(최종 검증 실패 스텝 이동)에 쓴다. 앞 방향은 maxReachedStep 가드가 막는다.
+  return { step, goNext, goPrev, goTo };
 }
