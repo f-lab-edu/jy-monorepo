@@ -17,7 +17,7 @@ const baseButton = {
   cursor: 'pointer',
 } as const;
 
-// 이전/다음 네비게이션. 마지막 스텝의 제출 동작은 제출 PR(#6)에서 연결한다.
+// 이전/다음 네비게이션. 마지막 스텝에서는 onNext가 제출 동작을 담당한다(RecordForm이 분기).
 export function StepNavigation({ step, totalSteps, onPrev, onNext }: StepNavigationProps) {
   const isLast = step === totalSteps;
 
@@ -40,13 +40,11 @@ export function StepNavigation({ step, totalSteps, onPrev, onNext }: StepNavigat
       <button
         type="button"
         onClick={onNext}
-        disabled={isLast}
         css={{
           ...baseButton,
           border: 'none',
           backgroundColor: '#2563eb',
           color: '#fff',
-          '&:disabled': { backgroundColor: '#9ca3af', cursor: 'not-allowed' },
         }}
       >
         {isLast ? '작성 완료' : '다음'}

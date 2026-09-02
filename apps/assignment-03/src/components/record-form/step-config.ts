@@ -5,6 +5,7 @@ import { BookInfoStep } from '@/components/book-info-step';
 import { QuotesStep } from '@/components/quotes-step';
 import { RatingStep } from '@/components/rating-step';
 import { ReviewStep } from '@/components/review-step';
+import { VisibilityStep } from '@/components/visibility-step';
 import type { ReadingRecordFormValues } from '@/lib/reading-record';
 
 /**
@@ -50,8 +51,8 @@ export const FUNNEL_STEPS = [
   {
     title: '공개 설정',
     description: '이 기록의 공개 여부를 정합니다.',
-    fields: [],
-    Content: null,
+    fields: ['visibility'],
+    Content: VisibilityStep,
   },
 ] as const satisfies readonly FunnelStepConfig[];
 

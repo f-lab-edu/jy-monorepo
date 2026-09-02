@@ -19,6 +19,15 @@ export const RECOMMEND_LABELS: Record<RecommendChoice, string> = {
   no: '추천하지 않아요',
 };
 
+// 공개 여부. recommend와 같은 이유로 boolean 대신 문자열 유니언 — 라디오 인풋 값은 항상 문자열이다.
+export const VISIBILITY_CHOICES = ['public', 'private'] as const;
+export type VisibilityChoice = (typeof VISIBILITY_CHOICES)[number];
+
+export const VISIBILITY_LABELS: Record<VisibilityChoice, string> = {
+  public: '전체 공개',
+  private: '나만 보기',
+};
+
 // 인용구 한 건. 페이지 번호는 인용구 개수에 따라 required가 달라지는 조건부 필드라
 // 인풋 원형(문자열)으로 두고 검증·제출 시 숫자로 다룬다.
 export interface QuoteField {
@@ -44,7 +53,7 @@ export interface ReadingRecordFormValues {
   // Step4 — 인용구 목록
   quotes: QuoteField[];
   // Step5 — 공개 여부
-  isPublic: boolean;
+  visibility: VisibilityChoice | null;
 }
 
 // 선택형 필드(status·recommend)는 null로 시작해 "미선택"과 "선택함"을 구분한다.
@@ -60,5 +69,5 @@ export const DEFAULT_FORM_VALUES: ReadingRecordFormValues = {
   rating: 0,
   review: '',
   quotes: [],
-  isPublic: false,
+  visibility: null,
 };
